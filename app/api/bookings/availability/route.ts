@@ -1,37 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { getApps } from "firebase-admin/app";
-
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  if (serviceAccount.projectId && serviceAccount.privateKey && serviceAccount.clientEmail) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      });
-    } catch (error) {
-      console.error("Firebase Admin initialization error:", error);
-    }
-  }
-}
+import { getFirestore } from "@/lib/firebase-admin";
 
 // GET: Check availability for dates and rooms
 export async function GET(request: NextRequest) {
   try {
-    if (!getApps().length) {
-      return NextResponse.json(
-        { error: "Firebase Admin not initialized" },
-        { status: 500 }
-      );
-    }
-
-    const db = admin.firestore();
+    const db = getFirestore();
     const { searchParams } = new URL(request.url);
     const accommodationId = searchParams.get("accommodationId");
     const datesParam = searchParams.get("dates"); // Comma-separated dates: "2025-01-15,2025-01-16"
@@ -66,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all bookings
-    let query: admin.firestore.Query = db.collection("bookings")
+    let query: FirebaseFirestore.Query = db.collection("bookings")
       .where("status", "in", ["pending", "confirmed"]);
 
     const snapshot = await query.get();

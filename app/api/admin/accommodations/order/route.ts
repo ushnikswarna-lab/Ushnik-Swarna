@@ -1,41 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { getApps } from "firebase-admin/app";
-
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  if (serviceAccount.projectId && serviceAccount.privateKey && serviceAccount.clientEmail) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      });
-    } catch (error) {
-      console.error("Firebase Admin initialization error:", error);
-    }
-  } else {
-    console.error("Firebase Admin credentials are missing. Please check your environment variables.");
-  }
-}
+import { getFirebaseAdmin, getFirestore } from "@/lib/firebase-admin";
 
 /**
  * PATCH: Update the order of accommodations
  */
 export async function PATCH(request: NextRequest) {
   try {
-    if (!getApps().length) {
-      return NextResponse.json(
-        { error: "Firebase Admin not initialized" },
-        { status: 500 }
-      );
-    }
-
-    const db = admin.firestore();
+    const admin = getFirebaseAdmin();
+    const db = getFirestore();
     const body = await request.json();
     const { ids } = body;
 

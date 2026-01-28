@@ -1,33 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { getApps } from "firebase-admin/app";
-
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  if (serviceAccount.projectId && serviceAccount.privateKey && serviceAccount.clientEmail) {
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      });
-    } catch (error) {
-      console.error("Firebase Admin initialization error:", error);
-    }
-  } else {
-    console.error("Firebase Admin credentials are missing. Please check your environment variables.");
-  }
-}
+import { getFirebaseAdmin, getFirestore } from "@/lib/firebase-admin";
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const admin = getFirebaseAdmin();
+    const db = getFirestore();
     const { id } = await params;
     const body = await request.json();
 
@@ -35,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: "status must be a boolean" }, { status: 400 });
     }
 
-    const docRef = admin.firestore().collection("amenities").doc(id);
+    const docRef = db.collection("amenities").doc(id);
     await docRef.update({
       status: body.status,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),

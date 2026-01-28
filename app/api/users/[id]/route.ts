@@ -1,25 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { getApps } from "firebase-admin/app";
-
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
-  } catch (error) {
-    console.error("Firebase Admin initialization error:", error);
-  }
-}
-
-const db = admin.firestore();
+import { getFirebaseAdmin, getFirestore, getAuth } from "@/lib/firebase-admin";
 
 export async function PATCH(
   request: NextRequest,
@@ -30,9 +10,12 @@ export async function PATCH(
     const body = await request.json();
     const { email, role, disabled, displayName, password } = body;
 
+    const admin = getFirebaseAdmin();
+    const db = getFirestore();
+
     // Update user in Firebase Authentication if password is provided
     if (password) {
-      await admin.auth().updateUser(id, {
+      await getAuth().updateUser(id, {
         password,
       });
     }
@@ -55,7 +38,7 @@ export async function PATCH(
     if (disabled !== undefined) {
       updateData.disabled = disabled;
       // Also update in Auth
-      await admin.auth().updateUser(id, {
+      await getAuth().updateUser(id, {
         disabled: disabled,
       });
     }
@@ -79,9 +62,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const db = getFirestore();
 
     // Delete user from Firebase Authentication
-    await admin.auth().deleteUser(id);
+    await getAuth().deleteUser(id);
 
     // Delete user document from Firestore
     await db.collection("users").doc(id).delete();

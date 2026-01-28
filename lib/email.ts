@@ -1,35 +1,61 @@
 import nodemailer from "nodemailer"
 import { format } from "date-fns"
 
-const INFO_EMAIL = process.env.INFO_EMAIL
-const INFO_APP_PASSWORD = process.env.INFO_APP_PASSWORD
+// Lazy initialization to avoid build-time errors when env vars are missing
+let _transporter: nodemailer.Transporter | null = null
+let _newsletterTransporter: nodemailer.Transporter | null = null
 
-if (!INFO_EMAIL || !INFO_APP_PASSWORD) {
-  throw new Error("INFO_EMAIL and INFO_APP_PASSWORD environment variables must be set")
+function getEnvVars() {
+  const INFO_EMAIL = process.env.INFO_EMAIL
+  const INFO_APP_PASSWORD = process.env.INFO_APP_PASSWORD
+  if (!INFO_EMAIL || !INFO_APP_PASSWORD) {
+    throw new Error("INFO_EMAIL and INFO_APP_PASSWORD environment variables must be set")
+  }
+  return { INFO_EMAIL, INFO_APP_PASSWORD }
 }
 
-// Create reusable transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: INFO_EMAIL,
-    pass: INFO_APP_PASSWORD,
-  },
-})
-
-// Newsletter-specific transporter (if configured, otherwise use default)
-const NEWSLETTER_EMAIL = process.env.NEWSLETTER_EMAIL || INFO_EMAIL
-const NEWSLETTER_APP_PASSWORD = process.env.NEWSLETTER_APP_PASSWORD || INFO_APP_PASSWORD
-
-const newsletterTransporter = NEWSLETTER_EMAIL !== INFO_EMAIL || NEWSLETTER_APP_PASSWORD !== INFO_APP_PASSWORD
-  ? nodemailer.createTransport({
+function getTransporter() {
+  if (!_transporter) {
+    const { INFO_EMAIL, INFO_APP_PASSWORD } = getEnvVars()
+    _transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: NEWSLETTER_EMAIL,
-        pass: NEWSLETTER_APP_PASSWORD,
+        user: INFO_EMAIL,
+        pass: INFO_APP_PASSWORD,
       },
     })
-  : transporter
+  }
+  return _transporter
+}
+
+function getNewsletterTransporter() {
+  if (!_newsletterTransporter) {
+    const { INFO_EMAIL, INFO_APP_PASSWORD } = getEnvVars()
+    const NEWSLETTER_EMAIL = process.env.NEWSLETTER_EMAIL || INFO_EMAIL
+    const NEWSLETTER_APP_PASSWORD = process.env.NEWSLETTER_APP_PASSWORD || INFO_APP_PASSWORD
+    if (NEWSLETTER_EMAIL !== INFO_EMAIL || NEWSLETTER_APP_PASSWORD !== INFO_APP_PASSWORD) {
+      _newsletterTransporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: NEWSLETTER_EMAIL,
+          pass: NEWSLETTER_APP_PASSWORD,
+        },
+      })
+    } else {
+      _newsletterTransporter = getTransporter()
+    }
+  }
+  return _newsletterTransporter
+}
+
+function getInfoEmail() {
+  return getEnvVars().INFO_EMAIL
+}
+
+function getNewsletterEmail() {
+  const { INFO_EMAIL } = getEnvVars()
+  return process.env.NEWSLETTER_EMAIL || INFO_EMAIL
+}
 
 export interface ContactFormData {
   name: string
@@ -42,8 +68,8 @@ export interface ContactFormData {
 
 export async function sendContactEmail(data: ContactFormData, clientIp: string): Promise<void> {
   const mailOptions = {
-    from: INFO_EMAIL,
-    to: INFO_EMAIL,
+    from: getInfoEmail(),
+    to: getInfoEmail(),
     replyTo: data.email,
     subject: `P2tEcostay Contact Form: ${data.name}${data.company ? ` from ${data.company}` : ''}`,
     html: `
@@ -80,7 +106,7 @@ Timestamp: ${new Date().toISOString()}
     `,
   }
 
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export async function sendReplyEmail(
@@ -89,7 +115,7 @@ export async function sendReplyEmail(
   message: string
 ): Promise<void> {
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: toEmail,
     subject: `Re: Your inquiry to P2tEcostay Resort`,
     html: `
@@ -116,7 +142,7 @@ P2tEcostay Resort Team
     `,
   }
 
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export interface BookingVerificationEmailParams {
@@ -130,7 +156,7 @@ export interface BookingVerificationEmailParams {
 export async function sendBookingIsItYouEmail(params: BookingVerificationEmailParams): Promise<void> {
   const { guestEmail, guestName, verifyLink, notMeLink, referenceNumber } = params
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: guestEmail,
     subject: `Is it you? – Confirm your P2tEcostay booking${referenceNumber ? ` (${referenceNumber})` : ""}`,
     html: `
@@ -165,14 +191,14 @@ ${referenceNumber ? `Booking reference: ${referenceNumber}` : ""}
 P2tEcostay Resort
     `,
   }
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export async function sendBookingVerifiedEmail(guestEmail: string, guestName: string): Promise<void> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://p2tecostay.com"
   const loginUrl = `${baseUrl.replace(/\/$/, "")}/login?redirect=/dashboard`
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: guestEmail,
     subject: "Email verified – P2tEcostay booking",
     html: `
@@ -186,7 +212,7 @@ export async function sendBookingVerifiedEmail(guestEmail: string, guestName: st
     `,
     text: `Email verified. Sign in: ${loginUrl}\n\nP2tEcostay Resort`,
   }
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export async function sendBookingReceivedEmail(
@@ -197,7 +223,7 @@ export async function sendBookingReceivedEmail(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ""
   const dashboardUrl = baseUrl ? `${baseUrl.replace(/\/$/, "")}/login?redirect=/dashboard` : "/login?redirect=/dashboard"
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: guestEmail,
     subject: `Booking received – ${referenceNumber} | P2tEcostay`,
     html: `
@@ -212,7 +238,7 @@ export async function sendBookingReceivedEmail(
     `,
     text: `Booking received. Reference: ${referenceNumber}. View: ${dashboardUrl}\n\nP2tEcostay Resort`,
   }
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export interface BookingNotificationEmailParams {
@@ -230,7 +256,7 @@ export interface BookingNotificationEmailParams {
 }
 
 export async function sendBookingNotificationToAdmin(params: BookingNotificationEmailParams): Promise<void> {
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || INFO_EMAIL;
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || getInfoEmail();
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
   const adminUrl = baseUrl ? `${baseUrl.replace(/\/$/, "")}/admin/bookings` : "/admin/bookings";
   
@@ -239,7 +265,7 @@ export async function sendBookingNotificationToAdmin(params: BookingNotification
     : "N/A";
   
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: adminEmail,
     subject: `New Booking Request – ${params.referenceNumber} | P2tEcostay`,
     html: `
@@ -281,7 +307,7 @@ View in Admin Panel: ${adminUrl}
 P2tEcostay Resort Admin
     `,
   }
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 export async function sendNewsletterEmail(
@@ -290,7 +316,7 @@ export async function sendNewsletterEmail(
   content: string
 ): Promise<void> {
   const mailOptions = {
-    from: NEWSLETTER_EMAIL,
+    from: getNewsletterEmail(),
     to: toEmail,
     subject: subject,
     html: `
@@ -306,7 +332,7 @@ export async function sendNewsletterEmail(
     `,
     text: `${content}\n\nBest regards,\nP2tEcostay Resort Team`,
   }
-  await newsletterTransporter.sendMail(mailOptions)
+  await getNewsletterTransporter().sendMail(mailOptions)
 }
 
 export interface BookingStatusChangeEmailParams {
@@ -354,7 +380,7 @@ export async function sendBookingStatusChangeEmail(params: BookingStatusChangeEm
     : "N/A";
 
   const mailOptions = {
-    from: INFO_EMAIL,
+    from: getInfoEmail(),
     to: params.guestEmail,
     subject: statusInfo.subject,
     html: `
@@ -394,7 +420,7 @@ Track Booking: ${trackUrl}
 P2tEcostay Resort
     `,
   }
-  await transporter.sendMail(mailOptions)
+  await getTransporter().sendMail(mailOptions)
 }
 
 function escapeHtml(text: string): string {

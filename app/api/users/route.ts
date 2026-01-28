@@ -1,28 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { getApps } from "firebase-admin/app";
-
-// Initialize Firebase Admin if not already initialized
-if (!getApps().length) {
-  const serviceAccount = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  };
-
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
-  } catch (error) {
-    console.error("Firebase Admin initialization error:", error);
-  }
-}
-
-const db = admin.firestore();
+import { getFirebaseAdmin, getFirestore, getAuth } from "@/lib/firebase-admin";
 
 export async function POST(request: NextRequest) {
   try {
+    const admin = getFirebaseAdmin();
+    const db = getFirestore();
     const body = await request.json();
     const { uid, email, password, role, disabled, displayName } = body;
 
@@ -85,7 +67,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user in Firebase Authentication using Admin SDK
-    const userRecord = await admin.auth().createUser({
+    const auth = getAuth();
+    const userRecord = await auth.createUser({
       email,
       password,
       displayName: displayName || undefined,
@@ -133,4 +116,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
