@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark theme - resort palette */
+
+    /* Background & foreground */
+    --background: 210 20% 7%;
+    --foreground: 0 0% 98%;
+    --card: 210 18% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 210 18% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Primary: Bright Green */
+    --primary: 145 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Deep Blue */
+    --secondary: 220 80% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted & neutrals */
+    --muted: 210 20% 16%;
+    --muted-foreground: 210 10% 70%;
+
+    /* Accent: softer green highlight */
+    --accent: 145 60% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 68% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 18% 22%;
+    --input: 210 18% 22%;
+    --ring: 145 70% 45%;
+    --radius: 0.5rem;
+
+    /* Sidebar colors - Dark mode */
+    --sidebar-background: 210 24% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 145 70% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 14%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 210 18% 22%;
+    --sidebar-ring: 145 70% 45%;
+
+    /* Chart colors */
+    --chart-1: 145 70% 45%;
+    --chart-2: 145 60% 40%;
+    --chart-3: 220 80% 45%;
+    --chart-4: 24 92% 63%;
+    --chart-5: 33 92% 64%;
+  }
+
+  .light {
+    /* Light theme - resort palette */
+
+    --background: 42 33% 96%;
+    --foreground: 210 24% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 24% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 24% 14%;
+
+    /* Primary: Bright Green */
+    --primary: 145 70% 38%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary: Deep Blue */
+    --secondary: 220 80% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Muted & neutrals */
+    --muted: 42 20% 90%;
+    --muted-foreground: 210 10% 40%;
+
+    /* Accent */
+    --accent: 145 60% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 42 15% 85%;
+    --input: 42 15% 85%;
+    --ring: 145 70% 38%;
+    --radius: 0.5rem;
+
+    /* Sidebar colors - Light mode */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 210 24% 14%;
+    --sidebar-primary: 145 70% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 42 20% 94%;
+    --sidebar-accent-foreground: 210 24% 14%;
+    --sidebar-border: 42 15% 85%;
+    --sidebar-ring: 145 70% 38%;
+
+    /* Chart colors */
+    --chart-1: 145 70% 38%;
+    --chart-2: 145 60% 36%;
+    --chart-3: 220 80% 45%;
+    --chart-4: 24 92% 63%;
+    --chart-5: 33 92% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Hide reCAPTCHA badge completely */
+  .grecaptcha-badge {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: none !important;
+    z-index: -9999 !important;
+  }
+
+  iframe[src*="recaptcha"],
+  div[class*="recaptcha"] {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    display: none !important;
+  }
+
+  .bg-grid-white\/\[0\.02\] {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  }
+
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .website-section h1,
+  .website-section h2,
+  .website-section h3,
+  .website-section h4,
+  .website-section h5,
+  .website-section h6 {
+    font-family: var(--font-serif);
+  }
+
+  .website-section p {
+    font-family: var(--font-sans);
+  }
+}

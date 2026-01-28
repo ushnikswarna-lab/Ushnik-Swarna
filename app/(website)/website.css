@@ -1,0 +1,34 @@
+/* Ushnik-Swarna website – light theme only, gold primary */
+
+.ushnik-website {
+  --gold: #d4af37;
+  --gold-dark: #b8962e;
+  --ivory: #fffef7;
+  --ivory-dark: #f5f3eb;
+}
+
+.ushnik-website h1,
+.ushnik-website h2,
+.ushnik-website h3,
+.ushnik-website h4,
+.ushnik-website h5,
+.ushnik-website h6 {
+  font-family: var(--font-heading), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ushnik-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--ivory-dark) 0%,
+    #e8e6e0 20%,
+    var(--ivory-dark) 40%,
+    var(--ivory-dark) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}

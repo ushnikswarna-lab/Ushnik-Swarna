@@ -1,0 +1,1 @@
+export type ProductFilterTab = "gold" | "silver" | "bridal" | "coins";

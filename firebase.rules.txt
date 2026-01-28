@@ -1,0 +1,163 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user is manager or admin
+    function isManagerOrAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager');
+    }
+    
+    // Helper function to check if user account is not disabled
+    function isUserEnabled() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.disabled == false;
+    }
+    
+    // Users collection - Admin only access
+    match /users/{userId} {
+      // Users can read their own document, or admins can read any user document
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      
+      // Only admins can create, update, or delete users
+      allow create: if isAdmin() && isUserEnabled();
+      allow update: if isAdmin() && isUserEnabled();
+      allow delete: if isAdmin() && isUserEnabled();
+    }
+    
+    // Products collection - Public read, Admin/Manager write
+    match /products/{productId} {
+      // Public read access (for website)
+      allow read: if true;
+      
+      // Admin and Manager can create, update, delete
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Product Types collection - Public read, Admin/Manager write
+    match /productTypes/{typeId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Services collection - Public read, Admin/Manager write
+    match /services/{serviceId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Solutions collection - Public read, Admin/Manager write
+    match /solutions/{solutionId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Solution Types collection - Public read, Admin/Manager write
+    match /solutionTypes/{typeId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Industries collection - Public read, Admin/Manager write
+    match /industries/{industryId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Clients collection - Public read, Admin/Manager write
+    match /clients/{clientId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Vendors collection - Public read, Admin/Manager write
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Careers collection - Public read (filtered by status), Admin/Manager write
+    match /careers/{careerId} {
+      // Public can read open, taking-applications, or closed careers
+      allow read: if true;
+      
+      // Admin and Manager can create, update, delete
+      allow create: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Contact Forms collection - Public create, Admin/Manager read/update
+    match /contactForms/{formId} {
+      // Anyone can create (for contact form submissions)
+      allow create: if true;
+      
+      // Only Admin and Manager can read and update
+      allow read: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Quick Contacts collection - Public create, Admin/Manager read/update
+    match /quickContacts/{contactId} {
+      // Anyone can create (for quick contact submissions)
+      allow create: if true;
+      
+      // Only Admin and Manager can read and update
+      allow read: if isManagerOrAdmin() && isUserEnabled();
+      allow update: if isManagerOrAdmin() && isUserEnabled();
+      allow delete: if isManagerOrAdmin() && isUserEnabled();
+    }
+    
+    // Backups collection - Admin only
+    match /backups/{backupId} {
+      // Only admins can read, create, update, or delete backups
+      allow read, write: if isAdmin() && isUserEnabled();
+    }
+    
+    // Allow admin to read all collections for backup purposes
+    // This is a catch-all rule that allows admins to read any collection
+    // Note: Server-side backup operations use Admin SDK which bypasses these rules,
+    // but this ensures client-side operations work if needed
+    match /{collection}/{document=**} {
+      // Admins can read any document for backup/restore operations
+      allow read: if isAdmin() && isUserEnabled();
+      
+      // Default deny for write operations (handled by specific collection rules above)
+      allow write: if false;
+    }
+  }
+}
+
