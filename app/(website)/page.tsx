@@ -15,6 +15,7 @@ import {
   Award,
   ChevronRight,
 } from "lucide-react";
+import ImageSlider from "@/components/website/ImageSlider";
 
 export const metadata: Metadata = {
   title: "Ushnik-Swarna | Jewellery, Digital Gold & Savings",
@@ -26,6 +27,7 @@ export default function HomePage() {
   return (
     <>
       {/* A. Hero */}
+      <ImageSlider/>
       <section className="relative overflow-hidden bg-gradient-to-b from-[#fffef7] to-white py-16 sm:py-24 lg:py-32">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.12),transparent)]" />
         <SectionContainer className="relative text-center">

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -8,20 +7,6 @@ import { ReCaptchaProvider } from "@/components/recaptcha-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { SITE_NAME, BASE_URL, getPageDescription, getLodgingBusinessSchema } from "@/lib/seo";
-
-const bodyFont = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const headingFont = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  weight: ["500", "600", "700"],
-  display: "swap",
-});
 
 const SITE_SUFFIX = ` | ${SITE_NAME}`;
 
@@ -88,9 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}
-      >
+      <body>
         <Script
           id="structured-data"
           type="application/ld+json"

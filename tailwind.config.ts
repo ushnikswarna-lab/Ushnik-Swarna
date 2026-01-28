@@ -18,10 +18,10 @@ const config: Config = {
       },
     },
     extend: {
-      // fontFamily: {
-      //   sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-      //   heading: ["var(--font-heading)", "Georgia", "serif"],
-      // },
+      fontFamily: {
+        sans: ["var(--font-sans)", "lato", "sans-serif"],
+        heading: ["var(--font-heading)", "lato", "sans-serif"],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

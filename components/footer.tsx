@@ -11,38 +11,43 @@ import { WeatherWidget } from "./weather-widget";
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-primary/10 bg-background">
-      {/* subtle background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,hsl(var(--primary)/0.08),transparent_40%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_240%_120%,hsl(var(--primary)/0.08),transparent_100%)]" />
-      <div className="relative container px-4">
-        <div className="grid gap-12 lg:grid-cols-[3fr_6fr_3fr] py-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <Link href="/" className="flex items-end gap-2">
-              <motion.div whileHover={{ rotate: [0, -6, 6, -3, 0] }} transition={{ duration: 0.4 }}>
-                <Image
-                  src="/logo.png"
-                  alt="P2tEcostay Logo"
-                  height={75}
-                  width={150}
-                  priority
-                  className="object-contain"
-                />
-              </motion.div>
-            </Link>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              A premium eco-friendly resort crafted for slow travel, intimate gatherings, and restorative getaways.
-            </p>
-            <div className="flex items-center gap-2 mt-3">
-              <SocialButton icon={<Instagram />} href="https://www.instagram.com/p2tecostay/" />
-              <SocialButton icon={<Mail />} href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'info@p2tecostay.com'}`} />
+    <footer className="relative overflow-hidden border-t border-primary/10 bg-primary/5">
+      <div className="relative border-b border-primary/40">
+        <div className="container p-4">
+        {/* <div className="grid gap-12 md:grid-cols-3 grid-cols-2"> */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-5">
+              <div className="flex items-center justify-center gap-3">
+                <Phone className="text-primary"/>
+                <div className="flex flex-col gap-1">
+                  <h2 className="">
+                    Call Us :
+                  </h2>
+                  <p className="text-xs font-semibold">
+                    +91 XXXX XXX XXX
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-3">
+                <Mail className="text-primary"/>
+                <div className="flex flex-col gap-1">
+                  <h2 className="">
+                    Email Us :
+                  </h2>
+                  <p className="text-xs font-semibold">
+                    +91 XXXX XXX XXX
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               <ThemeToggle />
             </div>
-          </motion.div>
+          </div>
+        </div>
+      </div>
+      <div className="relative container px-4">
+        <div className="grid gap-12 lg:grid-cols-[9fr_3fr] py-10">
           <div className="grid gap-12 md:grid-cols-4 grid-cols-2">
             <FooterColumn
               title="About Resort"
@@ -105,7 +110,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-primary/10 py-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-primary/40 py-4">
           <p className="text-xs text-muted-foreground">
             © 2025 P2tEcostay Resort. All rights reserved.
           </p>
